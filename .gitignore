@@ -7,3 +7,14 @@ __pycache__/
 # 忽略虛擬環境資料夾 (如果您有用的話)
 .venv/
 venv/
+
+# .gitignore
+
+# 忽略 VS Code 編輯器設定
+.vscode/
+
+# 忽略測試腳本
+test_gemini_prompt.py
+
+# 忽略舊的 (Regex版) 狀態檔
+dv_date_status.json
