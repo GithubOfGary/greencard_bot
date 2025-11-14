@@ -1,0 +1,57 @@
+# 檔案名稱: .github/workflows/run_scraper.yml
+
+name: Run DV Scraper
+
+on:
+  # 允許您手動點擊 "Run workflow" 來觸發
+  workflow_dispatch:
+  
+  # 排程器：每 8 小時執行一次
+  schedule:
+    # 這是一個 CRON 語法，意思是 "在每 8 小時的第 0 分鐘"
+    # (即 00:00, 08:00, 16:00 UTC 時間)
+    - cron: '0 */8 * * *'
+
+jobs:
+  scrape:
+    # 在最新的 Ubuntu 伺服器上執行
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. 取得儲存庫中的程式碼
+        uses: actions/checkout@v4
+
+      - name: 2. 設定 Python 環境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # 您可以指定 Python 版本
+
+      - name: 3. 安裝 Python 依賴函式庫
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 4. 執行您的 Python 腳本
+        env:
+          # 將 GitHub Secrets 注入到執行環境中
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # 執行您的腳本 (請確認 .py 檔名是否正確)
+          python check_dv_status.py
+
+      - name: 5. 儲存狀態 (自動 commit 狀態檔)
+        run: |
+          # 設定 Git 使用者
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 將您的 JSON 狀態檔加入 (請確認 .json 檔名是否正確)
+          git add dv_date_status_gemini.json 
+          
+          # 檢查是否有變更，如果有，就 commit 並 push 回儲存庫
+          # 這樣下次執行時，才能讀到「上次的狀態」
+          git diff --staged --quiet || (git commit -m "Update DV status state file" && git push)
+          
+          echo "State file check complete. Pushed if changed."
