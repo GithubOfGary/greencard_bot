@@ -161,6 +161,21 @@ async def send_telegram_notification(message):
 # --- 6. 主程式 (修改了函式呼叫) ---
 
 def main():
+    # 1. 取得目前時間字串
+    start_time_str = get_current_time_string()
+    
+    # 2. 準備啟動訊息
+    start_message = (
+        f"🚀 機器人啟動 (DV Program - AI 版)\n\n"
+        f"正在開始執行例行檢查...\n"
+        f"(排程啟動時間: {start_time_str})"
+    )
+    
+    # 3. 立刻發送「啟動訊息」
+    #    (注意：這會讓腳本先發通知，再開始工作)
+    print("發送啟動通知...")
+    asyncio.run(send_telegram_notification(start_message))
+    
     print(f"--- {get_current_time_string()} ---")
     print("--- 開始執行 DV 日期檢查 (Gemini 版) ---")
     
